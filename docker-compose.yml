@@ -1,0 +1,101 @@
+networks:
+  mps_network:
+    driver: bridge
+
+volumes:
+  mps_postgres_data:
+  mps_mongo_data:
+  mps_redis_data:
+
+services:
+  mps_postgres:
+    container_name: mps_postgres
+    image: postgres:16.1-alpine
+    restart: unless-stopped
+    networks:
+      - mps_network
+    environment:
+      POSTGRES_DB: ${POSTGRES_DATABASE_NAME:-postgres_mps}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres_password}
+    volumes:
+      - mps_postgres_data:/var/lib/postgresql/data
+    ports:
+      - ${POSTGRES_PORT:-9432}:5432
+
+  mps_mongo:
+    container_name: mps_mongo
+    image: mongo:8.0.15-noble
+    restart: unless-stopped
+    networks:
+      - mps_network
+    volumes:
+      - mps_mongo_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE_NAME:-mongo_mps}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME:-mongo_user}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-mongo_password}
+    ports:
+      - ${MONGO_PORT:-9017}:27017
+
+  mps_redis:
+    container_name: mps_redis
+    image: redis:7.4.0-alpine
+    restart: unless-stopped
+    networks:
+      - mps_network
+    command:
+      [
+        "redis-server",
+        "--requirepass",
+        "${REDIS_PASSWORD:-redis_password}",
+        "--save",
+        "60",
+        "1",
+        "--dir",
+        "/data",
+      ]
+    volumes:
+      - mps_redis_data:/data
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-redis_password}
+    ports:
+      - ${REDIS_PORT:-9379}:6379
+
+  adminer_local:
+    container_name: mps_adminer_local
+    image: adminer:4.8.1
+    restart: unless-stopped
+    networks:
+      - mps_network
+    depends_on:
+      - mps_postgres
+    ports:
+      - ${ADMINER_PORT:-9080}:8080
+
+  mps_mongo_express:
+    container_name: mps_mps_mongo_express
+    image: mongo-express:1.0.2-20
+    restart: unless-stopped
+    networks:
+      - mps_network
+    depends_on:
+      - mps_mongo
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_USERNAME:-mongo_user}:${MONGO_PASSWORD:-mongo_password}@mps_mongo:27017/?authSource=admin
+      ME_CONFIG_BASICAUTH_ENABLED: true
+      ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_EXPRESS_USERNAME:-mongo_express_user}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_EXPRESS_PASSWORD:-mongo_express_password}
+    ports:
+      - ${MONGO_EXPRESS_PORT:-9081}:8081
+
+  mps_redis_insight:
+    container_name: mps_redis_insight
+    image: redis/redisinsight:2.52
+    restart: unless-stopped
+    networks:
+      - mps_network
+    depends_on:
+      - mps_redis
+    ports:
+      - "${REDIS_INSIGHT_PORT:-9540}:5540"

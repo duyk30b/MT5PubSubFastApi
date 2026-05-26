@@ -1,0 +1,35 @@
+{
+  "window.title": "${rootName}",
+  "explorer.compactFolders": false,
+  "workbench.tree.indent": 16,
+  "workbench.editor.wrapTabs": true,
+  "git.allowForcePush": true,
+  "files.autoSave": "off",
+  "files.eol": "\n",
+  "files.exclude": {
+    "**/__pycache__": true
+  },
+  "search.exclude": {
+    "**/__pycache__": true,
+    "**/.venv": true
+  },
+  "editor.formatOnSave": true,
+  "editor.suggest.insertMode": "replace",
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit"
+  },
+
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.typeCheckingMode": "strict",
+  "python.analysis.diagnosticSeverityOverrides": {
+    "reportUnusedImport": "none",
+    "reportUnusedVariable": "none",
+    "reportUnusedFunction": "none",
+    "reportMissingTypeStubs": "none",
+    "reportUnknownMemberType": "warning",
+    "reportUnknownVariableType": "warning",
+    "reportUnknownArgumentType": "warning",
+    "reportPrivateUsage": "warning"
+  },
+  "cSpell.words": ["metatrader"]
+}
