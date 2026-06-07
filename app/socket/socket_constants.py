@@ -5,4 +5,4 @@ class SocketMessage:
     DEMO_PUSH = "demo:push"
 
     # MT5 events
-    SOCKET_MT5_STATUS = "SOCKET_MT5_STATUS"
+    SOCKET_MT5_PROGRAM_DATA = "SOCKET_MT5_PROGRAM_DATA"

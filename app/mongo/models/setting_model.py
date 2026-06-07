@@ -1,6 +1,8 @@
 from enum import StrEnum, unique
 from typing import Any, ClassVar, NotRequired, Optional, Self, TypedDict
+
 from pymongo import ASCENDING
+
 from app.mongo.mongo_model import (
     MongoCreateSchema,
     MongoFilterSchema,
@@ -24,19 +26,19 @@ class SettingModel(MongoModel):
     value: dict[str, Any] | str | int | bool
 
 
-class SettingCreateSchema(MongoCreateSchema):
+class SettingCreateDict(MongoCreateSchema):
     key: SettingKey
     value: dict[str, Any] | str | int | bool
 
 
-class SettingUpdateSchema(MongoUpdateSchema):
+class SettingUpdateDict(MongoUpdateSchema):
     key: NotRequired[SettingKey]
     value: dict[str, Any] | str | int | bool
 
 
-class SettingFilterSchema(MongoFilterSchema):
+class SettingFilterDict(MongoFilterSchema):
     key: SettingKey
 
 
-class SettingSortSchema(MongoSortSchema):
+class SettingSortDict(MongoSortSchema):
     key: Optional[int]  # 1 for ascending, -1 for descending

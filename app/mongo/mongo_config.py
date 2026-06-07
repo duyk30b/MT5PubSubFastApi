@@ -5,7 +5,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class MongoSettings(BaseSettings):
     MONGO_HOST: str = "localhost"
     MONGO_PORT: int = 27017
-    MONGO_DATABASE_NAME: str = "mongo_qtc"
+    MONGO_DATABASE_NAME: str = "mongo_database"
     MONGO_USERNAME: str = "mongo_user"
     MONGO_PASSWORD: str = "mongo_password"
 

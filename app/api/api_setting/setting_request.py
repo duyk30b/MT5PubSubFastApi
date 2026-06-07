@@ -1,13 +1,8 @@
 from pydantic import BaseModel, Field
 
-from app.core.camel_model import CamelModel
-from app.mongo.models.setting_model import SettingKey
+from app.postgres.entities.setting_entity import SettingKey
 
 
-class SettingCreateBody(CamelModel):
+class SettingUpsertBody(BaseModel):
     key: SettingKey = Field(...)
-    value: str = Field(...)
-
-
-class SettingUpdateBody(CamelModel):
     value: str = Field(...)

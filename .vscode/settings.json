@@ -1,6 +1,7 @@
 {
   "window.title": "${rootName}",
   "explorer.compactFolders": false,
+  "workbench.browser.openLocalhostLinks": false,
   "workbench.tree.indent": 16,
   "workbench.editor.wrapTabs": true,
   "git.allowForcePush": true,
@@ -18,11 +19,10 @@
   "editor.codeActionsOnSave": {
     "source.organizeImports": "explicit"
   },
-
   "python.analysis.autoImportCompletions": true,
   "python.analysis.typeCheckingMode": "strict",
   "python.analysis.diagnosticSeverityOverrides": {
-    "reportUnusedImport": "none",
+    "reportUnusedImport": "warning",
     "reportUnusedVariable": "none",
     "reportUnusedFunction": "none",
     "reportMissingTypeStubs": "none",
@@ -31,5 +31,7 @@
     "reportUnknownArgumentType": "warning",
     "reportPrivateUsage": "warning"
   },
-  "cSpell.words": ["metatrader"]
+  "cSpell.words": [
+    "metatrader"
+  ]
 }

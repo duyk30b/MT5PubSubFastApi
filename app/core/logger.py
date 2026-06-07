@@ -1,8 +1,11 @@
 import logging
-from tkinter import W
 from typing import Any
 
-logging.basicConfig(level=logging.DEBUG, datefmt="%Y-%m-%d %H:%M:%S")
+logging.basicConfig(level=logging.INFO, datefmt="%Y-%m-%d %H:%M:%S")
+logging.getLogger("app").setLevel(logging.DEBUG)
+logging.getLogger("alembic").setLevel(logging.WARNING)
+logging.getLogger("pymongo").setLevel(logging.WARNING)
+logging.getLogger("passlib").setLevel(logging.WARNING)
 
 
 class ColorFormatter(logging.Formatter):
@@ -17,11 +20,11 @@ class ColorFormatter(logging.Formatter):
     BOLD_RED = "\033[1;31m"  # Bold Red
 
     COLORS = {
-        logging.DEBUG: CYAN,
+        logging.DEBUG: MAGENTA,
         logging.ERROR: RED,
         logging.INFO: GREEN,
         logging.WARNING: YELLOW,
-        logging.CRITICAL: MAGENTA,
+        logging.CRITICAL: BOLD_RED,
     }
 
     def format(self, record: Any) -> str:
@@ -38,6 +41,6 @@ handler.setFormatter(
 )
 
 root = logging.getLogger()
-root.setLevel(logging.DEBUG)
+root.setLevel(logging.INFO)
 root.handlers.clear()  # tránh duplicate
 root.addHandler(handler)

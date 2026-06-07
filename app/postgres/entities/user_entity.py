@@ -1,15 +1,16 @@
 from enum import IntEnum, unique
-from typing import Literal, Optional
+from typing import Literal, NotRequired, Required
 
 from sqlalchemy import BigInteger, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.postgres.postgres_entity import (
-    PostgresCreateSchema,
+    PostgresCreateDict,
+    PostgresDict,
     PostgresEntity,
-    PostgresFilterSchema,
-    PostgresSortSchema,
-    PostgresUpdateSchema,
+    PostgresFilterDict,
+    PostgresSortDict,
+    PostgresUpdateDict,
 )
 
 
@@ -20,19 +21,20 @@ class UserType(IntEnum):
     USER = 2
 
 
-UserResponseField = Literal[
-    "id",
-    "fullName",
-    "username",
-    "passwordHash",
-    "userType",
-    "isActive",
-    "createdAt",
-    "updatedAt",
-]
+UserExcludeField = Literal["passwordHash"]
 
 
-class UserEntity(PostgresEntity[UserResponseField]):
+class UserDict(PostgresDict):
+    fullName: str
+    username: str
+    passwordHash: str
+    userType: UserType
+    isActive: int
+    createdAt: int
+    updatedAt: int
+
+
+class UserEntity(PostgresEntity[UserDict, UserExcludeField]):
     __tablename__ = "User"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
@@ -47,33 +49,33 @@ class UserEntity(PostgresEntity[UserResponseField]):
     updatedAt: Mapped[int] = mapped_column(BigInteger, nullable=False)
 
 
-class UserCreateSchema(PostgresCreateSchema):
-    fullName: str
-    username: str
-    passwordHash: str
-    userType: UserType
-    isActive: int
-    createdAt: int
-    updatedAt: int
+class UserCreateDict(PostgresCreateDict):
+    fullName: Required[str]
+    username: Required[str]
+    passwordHash: Required[str]
+    userType: Required[UserType]
+    isActive: Required[int]
+    createdAt: Required[int]
+    updatedAt: Required[int]
 
 
-class UserUpdateSchema(PostgresUpdateSchema, total=False):
-    fullName: str
-    username: str
-    passwordHash: str
-    userType: UserType
-    isActive: int
-    createdAt: int
-    updatedAt: int
+class UserUpdateDict(PostgresUpdateDict):
+    fullName: NotRequired[str]
+    username: NotRequired[str]
+    passwordHash: NotRequired[str]
+    userType: NotRequired[UserType]
+    isActive: NotRequired[int]
+    createdAt: NotRequired[int]
+    updatedAt: NotRequired[int]
 
 
-class UserFilterSchema(PostgresFilterSchema, total=False):
-    fullName: Optional[str]
-    username: Optional[str]
-    userType: Optional[UserType]
+class UserFilterDict(PostgresFilterDict):
+    fullName: NotRequired[str | None]
+    username: NotRequired[str | None]
+    userType: NotRequired[UserType | None]
 
 
-class UserSortSchema(PostgresSortSchema, total=False):
-    userType: Optional[int]  # 1 for ascending, -1 for descending
-    username: Optional[int]
-    isActive: Optional[int]
+class UserSortDict(PostgresSortDict):
+    userType: NotRequired[int]  # 1 for ascending, -1 for descending
+    username: NotRequired[int]
+    isActive: NotRequired[int]

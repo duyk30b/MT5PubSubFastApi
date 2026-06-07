@@ -1,5 +1,5 @@
-from collections.abc import Generator
 import logging
+from collections.abc import Generator
 
 from sqlalchemy import Engine, create_engine, text
 from sqlalchemy.orm import Session, sessionmaker
@@ -30,7 +30,7 @@ class PostgresConnection:
                 f"Successfully connected to PostgreSQL: {postgres_settings.sqlalchemy_database_uri}"
             )
         except Exception as exc:
-            self.close()
+            await self.close()
             logger.error(
                 f"Failed to connect PostgreSQL: {postgres_settings.sqlalchemy_database_uri}: {exc}"
             )
@@ -38,7 +38,7 @@ class PostgresConnection:
                 f"Failed to connect PostgreSQL: {postgres_settings.sqlalchemy_database_uri}: {exc}"
             )
 
-    def close(self) -> None:
+    async def close(self) -> None:
         if self.engine is not None:
             self.engine.dispose()
         self.engine = None
@@ -56,4 +56,4 @@ class PostgresConnection:
             db.close()
 
 
-pgConn = PostgresConnection()
+PostgresConn = PostgresConnection()

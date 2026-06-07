@@ -15,6 +15,10 @@ class Settings(BaseSettings):
     throttle_times: int = 60
     throttle_seconds: int = 60
 
+    mt5_program_root_dir: str = "D:\\Programs\\MetaTrader5"
+    mt5_terminal_filename: str = "terminal64.exe"
+    mt5_program_poll_seconds: float = 0.5
+
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="ignore"
     )

@@ -1,14 +1,13 @@
 import logging
-from typing import Any, List, Optional, Type
+from typing import Any, List, Type
 
 from pymongo import AsyncMongoClient
 from pymongo.asynchronous.database import AsyncDatabase
 
 from app.mongo.models.setting_model import SettingModel
-from app.mongo.mongo_model import MongoModel
 from app.mongo.mongo_config import mongo_settings
+from app.mongo.mongo_model import MongoModel
 
-logging.getLogger("pymongo").setLevel(logging.INFO)
 logger = logging.getLogger(__name__)
 
 

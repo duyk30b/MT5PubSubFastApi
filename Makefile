@@ -1,5 +1,45 @@
 dev:
-	uv run uvicorn app.main:socket_app --host 0.0.0.0 --reload --reload-dir app
+	uv run uvicorn app.main:socket_app --host 0.0.0.0 --reload
+
+mt5-01:
+	uv run python -m mt5.mt5_instance_01
+
+mt5-02:
+	uv run python -m mt5.mt5_instance_02
+
+mt5-03:
+	uv run python -m mt5.mt5_instance_03
+
+mt5-04:
+	uv run python -m mt5.mt5_instance_04
+
+mt5-05:
+	uv run python -m mt5.mt5_instance_05
+
+mt5-all:
+	cmd /C start "" /B uv run python -m mt5.mt5_instance_01
+	cmd /C start "" /B uv run python -m mt5.mt5_instance_02
+	cmd /C start "" /B uv run python -m mt5.mt5_instance_03
+	cmd /C start "" /B uv run python -m mt5.mt5_instance_04
+	cmd /C start "" /B uv run python -m mt5.mt5_instance_05
+
+mt5-stop:
+	powershell -NoProfile -Command "$$pattern = '-m\s+mt5\.mt5_instance_0[1-5](\s|$$)'; $$procs = Get-CimInstance Win32_Process | Where-Object { $$_.Name -match '^python(\.exe)?$$' -and $$_.CommandLine -match $$pattern }; if (-not $$procs) { Write-Host 'No MT5 instance process found.'; exit 0 }; foreach ($$p in $$procs) { Stop-Process -Id $$p.ProcessId -Force -ErrorAction SilentlyContinue; Write-Host ('Stopped PID=' + $$p.ProcessId) }"
+
+mt5-status:
+	powershell -NoProfile -Command "$$pattern = '-m\s+(mt5\.mt5_instance_0[1-5])(\s|$$)'; $$procs = Get-CimInstance Win32_Process | Where-Object { $$_.Name -match '^python(\.exe)?$$' -and $$_.CommandLine -match $$pattern }; if (-not $$procs) { Write-Host 'No MT5 instance process running.'; exit 0 }; $$rows = $$procs | ForEach-Object { if ($$_.CommandLine -match $$pattern) { [PSCustomObject]@{ Instance = $$Matches[1]; PID = $$_.ProcessId; CommandLine = $$_.CommandLine } } }; $$rows | Sort-Object Instance, PID | Format-Table -AutoSize"
+
+mt5-task-install:
+	powershell -NoProfile -ExecutionPolicy Bypass -File deploy/windows/install_mt5_tasks.ps1
+
+mt5-task-start:
+	powershell -NoProfile -ExecutionPolicy Bypass -File deploy/windows/start_mt5_tasks.ps1
+
+mt5-task-stop:
+	powershell -NoProfile -ExecutionPolicy Bypass -File deploy/windows/stop_mt5_tasks.ps1
+
+mt5-task-status:
+	powershell -NoProfile -ExecutionPolicy Bypass -File deploy/windows/status_mt5_tasks.ps1
 
 type:
 	uv run pyright app

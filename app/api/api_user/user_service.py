@@ -1,16 +1,15 @@
+import logging
 import time
 from typing import Any
 
-from fastapi import HTTPException
 from sqlalchemy.orm import Session
-import logging
 
 from app.api.api_user.user_request import UserCreateBody, UserUpdateBody
 from app.core.exception import BusinessException
 from app.core.security import hash_password
 from app.postgres.entities.user_entity import (
-    UserCreateSchema,
-    UserUpdateSchema,
+    UserCreateDict,
+    UserUpdateDict,
 )
 from app.postgres.repositories.user_repository import user_repository
 from app.redis.cache.user_data_cache import userDataCache
@@ -32,9 +31,6 @@ class UserService:
         result = user_repository.pagination(db, page=page, limit=limit)
         userList = [u.to_response(exclude=["passwordHash"]) for u in result.data]
 
-        logger.info(
-            f"Paginated users: page={page}, limit={limit}, total={result.total}, userList={userList}"
-        )
         return {
             "userList": userList,
             "total": result.total,
@@ -57,7 +53,7 @@ class UserService:
     ) -> dict[str, Any]:
         user = user_repository.find_one_by_id(db, user_id)
         if not user:
-            raise HTTPException(status_code=404, detail="User not found")
+            raise BusinessException("User not found")
         return {"user": user.to_response(exclude=["passwordHash"])}
 
     async def user_create(
@@ -67,12 +63,12 @@ class UserService:
     ) -> dict[str, Any]:
         existed = user_repository.find_one(db, {"username": body.account.username})
         if existed:
-            raise HTTPException(status_code=400, detail="Username already exists")
+            raise BusinessException("Username already exists")
 
         now = int(time.time() * 1000)
         user = user_repository.insert_one(
             db,
-            UserCreateSchema(
+            UserCreateDict(
                 fullName=body.user.fullName,
                 username=body.account.username,
                 passwordHash=hash_password(body.account.password),
@@ -94,7 +90,7 @@ class UserService:
         user_id: int,
         body: UserUpdateBody,
     ) -> dict[str, Any]:
-        update_data = UserUpdateSchema(
+        update_data = UserUpdateDict(
             fullName=body.user.fullName,
             userType=body.user.userType,
             isActive=body.user.isActive,
@@ -106,7 +102,7 @@ class UserService:
 
         user = user_repository.update_one_by_id(db, user_id, update_data)
         if not user:
-            raise HTTPException(status_code=404, detail="User not found")
+            raise BusinessException("User not found")
 
         await userDataCache.set_user(
             {"id": user.id, "userType": user.userType, "isActive": user.isActive}

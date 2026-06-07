@@ -1,20 +1,21 @@
+from typing import Any, Generic, List, Optional, Type, TypeVar
+
 from sqlalchemy.orm import Session
-from typing import Any, Dict, Generic, Optional, TypeVar, Type, List
 
 from app.postgres.postgres_condition import PostgresCondition
 from app.postgres.postgres_entity import (
-    PostgresCreateSchema,
+    PostgresCreateDict,
     PostgresEntity,
-    PostgresFilterSchema,
-    PostgresSortSchema,
-    PostgresUpdateSchema,
+    PostgresFilterDict,
+    PostgresSortDict,
+    PostgresUpdateDict,
 )
 
-M = TypeVar("M", bound=PostgresEntity[Any])
-C = TypeVar("C", bound=PostgresCreateSchema)
-U = TypeVar("U", bound=PostgresUpdateSchema)
-F = TypeVar("F", bound=PostgresFilterSchema)
-S = TypeVar("S", bound=PostgresSortSchema)
+M = TypeVar("M", bound=PostgresEntity[Any, Any])
+C = TypeVar("C", bound=PostgresCreateDict)
+U = TypeVar("U", bound=PostgresUpdateDict)
+F = TypeVar("F", bound=PostgresFilterDict)
+S = TypeVar("S", bound=PostgresSortDict)
 
 
 class PaginationResult(Generic[M]):
@@ -142,6 +143,21 @@ class PostgresRepository(Generic[M, C, U, F, S], PostgresCondition):
         db.commit()
         db.refresh(obj)
         return obj
+
+    def upsert_one(self, db: Session, filter: F, data: C | U) -> M:
+        obj = self.find_one(db, filter)
+        if obj:
+            for k, v in data.items():  # type: ignore[attr-defined]
+                setattr(obj, k, v)
+            db.commit()
+            db.refresh(obj)
+            return obj
+
+        new_obj = self.model(**data)
+        db.add(new_obj)
+        db.commit()
+        db.refresh(new_obj)
+        return new_obj
 
     # ========================
     # Delete

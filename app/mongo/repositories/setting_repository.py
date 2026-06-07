@@ -1,9 +1,9 @@
 from app.mongo.models.setting_model import (
-    SettingCreateSchema,
-    SettingFilterSchema,
+    SettingCreateDict,
+    SettingFilterDict,
     SettingModel,
-    SettingSortSchema,
-    SettingUpdateSchema,
+    SettingSortDict,
+    SettingUpdateDict,
 )
 from app.mongo.mongo_repository import MongoRepository
 
@@ -11,10 +11,10 @@ from app.mongo.mongo_repository import MongoRepository
 class SettingRepository(
     MongoRepository[
         SettingModel,
-        SettingCreateSchema,
-        SettingUpdateSchema,
-        SettingFilterSchema,
-        SettingSortSchema,
+        SettingCreateDict,
+        SettingUpdateDict,
+        SettingFilterDict,
+        SettingSortDict,
     ]
 ):
     def __init__(self):

@@ -1,12 +1,13 @@
 import logging
 
-from redis.asyncio import Redis, ConnectionPool
+from redis.asyncio import ConnectionPool, Redis
+
 from app.redis.redis_config import redis_settings
 
 logger = logging.getLogger(__name__)
 
 
-class RedisConnection:
+class RedisConnectionBase:
     def __init__(self) -> None:
         self._pool: ConnectionPool | None = None
         self.client: Redis | None = None
@@ -50,4 +51,4 @@ class RedisConnection:
         return self.client
 
 
-redisConnection = RedisConnection()
+RedisConnection = RedisConnectionBase()

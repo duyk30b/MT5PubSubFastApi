@@ -11,7 +11,7 @@ from app.api.api_auth.auth_request import (
 )
 from app.api.api_auth.auth_service import AuthService
 from app.depends.request_depends import RequestDepends, RequestState
-from app.postgres.postgres_connection import pgConn
+from app.postgres.postgres_connection import PostgresConn
 
 auth_controller = APIRouter(prefix="/auth", tags=["Auth"])
 auth_service = AuthService()
@@ -21,7 +21,7 @@ auth_service = AuthService()
 async def login(
     body: LoginBody,
     state: RequestState = Depends(RequestDepends.state),
-    db: Session = Depends(pgConn.get_db),
+    db: Session = Depends(PostgresConn.get_db),
 ) -> dict[str, Any]:
     data = await auth_service.login(state, body, db)
     return data
@@ -31,7 +31,7 @@ async def login(
 async def login_root(
     body: LoginRootBody,
     state: RequestState = Depends(RequestDepends.state),
-    db: Session = Depends(pgConn.get_db),
+    db: Session = Depends(PostgresConn.get_db),
 ) -> dict[str, Any]:
     data = await auth_service.login_root(state, body, db)
     return data
@@ -41,7 +41,7 @@ async def login_root(
 async def refresh_token(
     body: RefreshTokenBody,
     state: RequestState = Depends(RequestDepends.state),
-    db: Session = Depends(pgConn.get_db),
+    db: Session = Depends(PostgresConn.get_db),
 ) -> dict[str, Any]:
     data = await auth_service.refresh_token(state, body, db)
     return data
@@ -51,7 +51,7 @@ async def refresh_token(
 async def logout(
     body: LogoutBody,
     state: RequestState = Depends(RequestDepends.state),
-    db: Session = Depends(pgConn.get_db),
+    db: Session = Depends(PostgresConn.get_db),
 ):
     data = await auth_service.logout(body)
     return data

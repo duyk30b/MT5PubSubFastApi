@@ -1,19 +1,19 @@
 # app/repositories/user_repository.py
 from sqlalchemy.orm import Session
 
-from app.postgres.postgres_repository import PostgresRepository
 from app.postgres.entities.user_entity import (
-    UserCreateSchema,
+    UserCreateDict,
     UserEntity,
-    UserUpdateSchema,
-    UserFilterSchema,
-    UserSortSchema,
+    UserFilterDict,
+    UserSortDict,
+    UserUpdateDict,
 )
+from app.postgres.postgres_repository import PostgresRepository
 
 
 class UserRepository(
     PostgresRepository[
-        UserEntity, UserCreateSchema, UserUpdateSchema, UserFilterSchema, UserSortSchema
+        UserEntity, UserCreateDict, UserUpdateDict, UserFilterDict, UserSortDict
     ]
 ):
     def __init__(self):

@@ -1,37 +1,46 @@
 from collections.abc import Iterable
-from typing import Any, Generic, Optional, TypeVar, TypedDict
+from typing import Generic, NotRequired, TypedDict, TypeVar, cast
 
 from sqlalchemy import inspect
 from sqlalchemy.orm import DeclarativeBase
 
-ExcludeFieldT = TypeVar("ExcludeFieldT", bound=str)
+
+class PostgresDict(TypedDict):
+    pass
 
 
-class PostgresEntity(DeclarativeBase, Generic[ExcludeFieldT]):
+R = TypeVar("R", bound=PostgresDict)
+ExcludeField = TypeVar("ExcludeField", bound=str)
+
+
+class PostgresEntity(DeclarativeBase, Generic[R, ExcludeField]):
     def to_response(
         self,
-        exclude: Iterable[ExcludeFieldT] | None = None,
-    ) -> dict[str, Any]:
+        exclude: Iterable[ExcludeField] | None = None,
+    ) -> R:
         mapper = inspect(self).mapper
         excluded = set(exclude or [])
-        return {
-            column.key: getattr(self, column.key)
-            for column in mapper.column_attrs
-            if column.key not in excluded
-        }
+        return cast(
+            R,
+            {
+                column.key: getattr(self, column.key)
+                for column in mapper.column_attrs
+                if column.key not in excluded
+            },
+        )
 
 
-class PostgresCreateSchema(TypedDict):
+class PostgresCreateDict(TypedDict):
     pass
 
 
-class PostgresUpdateSchema(TypedDict, total=False):
+class PostgresUpdateDict(TypedDict):
     pass
 
 
-class PostgresFilterSchema(TypedDict, total=False):
-    id: Optional[str]
+class PostgresFilterDict(TypedDict):
+    id: NotRequired[str]
 
 
-class PostgresSortSchema(TypedDict, total=False):
-    id: Optional[int]  # 1 for ascending, -1 for descending
+class PostgresSortDict(TypedDict):
+    id: NotRequired[int]  # 1 for ascending, -1 for descending

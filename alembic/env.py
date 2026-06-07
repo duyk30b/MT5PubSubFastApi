@@ -1,10 +1,8 @@
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
+from sqlalchemy import engine_from_config, pool
 
 from alembic import context
-
 from app.postgres.postgres_config import postgres_settings
 from app.postgres.postgres_entity import PostgresEntity
 
@@ -28,7 +26,9 @@ target_metadata = PostgresEntity.metadata
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
-from app.postgres.entities.user_entity import UserEntity  # noqa
+from app.postgres.entities.user_entity import UserEntity  # type: ignore # noqa
+from app.postgres.entities.mt5_account_entity import MT5AccountEntity  # type: ignore # noqa
+from app.postgres.entities.setting_entity import SettingEntity  # type: ignore # noqa
 
 
 def run_migrations_offline() -> None:
@@ -69,9 +69,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()
