@@ -12,9 +12,7 @@ class Settings(BaseSettings):
     jwt_refresh_seconds: int = 2592000  # 30 days
     jwt_algorithm: str = "HS256"
 
-    model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", extra="ignore"
-    )
+    model_config = SettingsConfigDict(env_file_encoding="utf-8", extra="ignore")
 
 
 settings: Settings = Settings()

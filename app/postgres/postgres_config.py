@@ -9,9 +9,7 @@ class PostgresSettings(BaseSettings):
     POSTGRES_PASSWORD: str = "postgres_password"
     POSTGRES_URI_MIGRATION: str = ""
     POSTGRES_URI_APP: str = ""
-    model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", extra="ignore"
-    )
+    model_config = SettingsConfigDict(env_file_encoding="utf-8", extra="ignore")
 
     @property
     def sqlalchemy_uri_migration(self) -> str:

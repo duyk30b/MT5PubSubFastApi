@@ -65,24 +65,6 @@ from app.postgres.entities.user_entity import UserEntity  # noqa
 - Rollback
   `alembic downgrade -1`
 
-# III. Install Redis
-1. Download and Install: https://github.com/microsoftarchive/redis/releases
-2. Run
-```
-cd /d D:\Redis
-
-redis-server.exe redis.windows.conf
-```
-3. Test
-```
-cd /d D:\Redis
-
-redis-cli.exe
-ping
-pong
-set name Duy
-get name
-```
 
 # III. Nginx
 - Hướng dẫn lấy cert và key trên cloudflare
@@ -115,14 +97,3 @@ Arguments: -m uvicorn app.main:socket_app --host 0.0.0.0 --port 8000 --workers 1
 `nssm set FastAPI AppStdout D:\Project\MT5PubSubFastApi\logs\fastapi.log`
 `nssm set FastAPI AppStderr D:\Project\MT5PubSubFastApi\logs\fastapi-error.log`
 
-2. Task Scheduler
-- Power shell
-```
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass 
-& "C:\Projects\MT5PubSubFastApi\scripts\auto_start.ps1"
-```
-
-```
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass 
-& "C:\Projects\MT5PubSubFastApi\scripts\nginx_start.ps1"
-```

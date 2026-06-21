@@ -31,11 +31,11 @@ class MongoDBConnectionBase:
                 self.client = AsyncMongoClient(
                     mongo_settings.mongo_uri,
                     serverSelectionTimeoutMS=5000,  # timeout tìm primary
-                    connectTimeoutMS=5000,  # timeout khi mở TCP
+                    connectTimeoutMS=30000,  # timeout khi mở TCP
                     socketTimeoutMS=30000,  # timeout query
                     maxPoolSize=100,  # số connection tối đa
                     minPoolSize=5,  # giữ sẵn connection
-                    maxIdleTimeMS=60000,  # tự đóng connection nhàn rỗi
+                    # maxIdleTimeMS=60000,  # tự đóng connection nhàn rỗi
                     retryWrites=True,  # retry insert/update
                     retryReads=True,  # retry read
                     heartbeatFrequencyMS=10000,  # kiểm tra primary còn sống

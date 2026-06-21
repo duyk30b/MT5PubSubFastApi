@@ -1,7 +1,7 @@
 from enum import StrEnum, unique
-from typing import Any, ClassVar, NotRequired, Optional, Self, TypedDict
+from typing import Any, ClassVar, NotRequired, Optional, Sequence
 
-from pymongo import ASCENDING
+from pymongo import ASCENDING, IndexModel
 
 from app.mongo.mongo_model import (
     MongoCreateSchema,
@@ -19,8 +19,8 @@ class SettingKey(StrEnum):
 
 class SettingModel(MongoModel):
     collection_name: ClassVar[str] = "setting"
-    indexes: ClassVar[list[dict[str, Any]]] = [
-        {"keys": [("key", ASCENDING)], "unique": True},
+    indexes: ClassVar[Sequence[IndexModel]] = [
+        IndexModel([("key", ASCENDING)], unique=True),
     ]
     key: SettingKey
     value: dict[str, Any] | str | int | bool

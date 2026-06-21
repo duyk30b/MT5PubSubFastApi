@@ -1,3 +1,4 @@
+import asyncio
 import time
 
 from app.module.process_module import ProcessInfo
@@ -181,14 +182,20 @@ class MT5ProgramCacheBase(RedisBase):
         account_info: MT5ProgramAccountInfo,
         position_list: list[MT5ProgramPositionInfo],
     ) -> None:
-        # Batch runtime fields in one Redis hash write to reduce per-loop latency.
-        await self._hash_set(
-            _key_program_data(program_name),
-            {
-                "refresh_time": refresh_time,
-                "account_info": PyObject.json_dump(account_info),
-                "position_list": PyObject.json_dump(position_list),
-            },
+
+        # Lỗi với redis version 3.2.3: không hỗ trợ hset với mapping, chỉ hỗ trợ field-value pair. Cần dùng pipeline để batch set nhiều field-value pair.
+        # await self._hash_set(
+        #     _key_program_data(program_name),
+        #     {
+        #         "refresh_time": refresh_time,
+        #         "account_info": PyObject.json_dump(account_info),
+        #         "position_list": PyObject.json_dump(position_list),
+        #     },
+        # )
+        await asyncio.gather(
+            self.program_data_set_account_info(program_name, account_info),
+            self.program_data_set_position_list(program_name, position_list),
+            self.program_data_set_refresh_time(program_name, refresh_time),
         )
 
     async def program_data_set_position_list(
