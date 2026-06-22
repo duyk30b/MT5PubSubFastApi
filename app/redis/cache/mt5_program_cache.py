@@ -1,5 +1,5 @@
 import asyncio
-import time
+from datetime import datetime, timezone
 
 from app.module.process_module import ProcessInfo
 from app.postgres.entities.mt5_account_entity import MT5AccountAction, MT5AccountDict
@@ -216,7 +216,12 @@ class MT5ProgramCacheBase(RedisBase):
         # )  # Keep only the latest 100 errors
 
         key = _key_program_error(program_name)
-        message = f"{time.strftime('%Y-%m-%d %H:%M:%S')} - {error_message}"
+        time_str = (
+            datetime.now(timezone.utc)
+            .isoformat(timespec="milliseconds")
+            .replace("+00:00", "Z")
+        )
+        message = f"{time_str} - {error_message}"
         async with self._pipeline(transaction=False) as pipe:
             pipe.rpush(key, message)
             pipe.ltrim(key, -100, -1)
@@ -232,7 +237,13 @@ class MT5ProgramCacheBase(RedisBase):
         # )  # Keep only the latest 200 logs
 
         key = _key_program_log(program_name)
-        message = f"{time.strftime('%Y-%m-%d %H:%M:%S')} - {log}"
+        time_str = (
+            datetime.now(timezone.utc)
+            .isoformat(timespec="milliseconds")
+            .replace("+00:00", "Z")
+        )
+        message = f"{time_str} - {log}"
+
         async with self._pipeline(transaction=False) as pipe:
             pipe.rpush(key, message)
             pipe.ltrim(key, -200, -1)

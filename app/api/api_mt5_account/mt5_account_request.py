@@ -36,32 +36,25 @@ class Mt5AccountQuery(BaseModel):
         )
 
 
-class Mt5AccountCreateInfo(BaseModel):
+class Mt5AccountCreateBody(BaseModel):
     accountType: MT5AccountType = Field(...)
     accountLogin: int = Field(...)
     accountName: str = Field(...)
     accountServer: str = Field(...)
     accountPassword: str = Field(...)
-    programName: str = Field(...)
-    isOpening: int = Field(...)
-    isCopying: int = Field(...)
     copyMultiplier: float = Field(...)
     copyMasterLogin: int = Field(...)
     description: str = Field(...)
+    isOpening: int = Field(...)
+    isCopying: int = Field(...)
+    programName: str = Field(...)
+    timeCorrectionSeconds: int = Field(...)
 
 
-class Mt5AccountUpdateInfo(BaseModel):
+class Mt5AccountUpdateBody(BaseModel):
     accountType: MT5AccountType = Field(...)
     copyMultiplier: float = Field(...)
     copyMasterLogin: int = Field(...)
     description: str = Field(...)
-
-
-class Mt5AccountCreateBody(BaseModel):
-    mt5Account: Mt5AccountCreateInfo = Field(...)
     programName: str = Field(...)
-
-
-class Mt5AccountUpdateBody(BaseModel):
-    mt5Account: Mt5AccountUpdateInfo = Field(...)
-    programName: str = Field(...)
+    timeCorrectionSeconds: int = Field(...)

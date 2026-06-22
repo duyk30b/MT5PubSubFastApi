@@ -38,6 +38,7 @@ class MT5AccountDict(PostgresDict):
     copyMultiplier: float
     copyMasterLogin: int
     description: str
+    timeCorrectionSeconds: int
 
 
 class MT5AccountEntity(PostgresEntity[MT5AccountDict, MT5AccountExcludeField]):
@@ -55,6 +56,7 @@ class MT5AccountEntity(PostgresEntity[MT5AccountDict, MT5AccountExcludeField]):
     copyMultiplier: Mapped[float] = mapped_column(Float, default=1)
     copyMasterLogin: Mapped[int] = mapped_column(BigInteger, default=0)
     description: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    timeCorrectionSeconds: Mapped[int] = mapped_column(Integer, default=0)
 
 
 class MT5AccountCreateDict(PostgresCreateDict):
@@ -69,6 +71,7 @@ class MT5AccountCreateDict(PostgresCreateDict):
     copyMultiplier: Required[float]
     copyMasterLogin: Required[int]
     description: Required[str]
+    timeCorrectionSeconds: Required[int]
 
 
 class MT5AccountUpdateDict(PostgresUpdateDict):
@@ -83,6 +86,7 @@ class MT5AccountUpdateDict(PostgresUpdateDict):
     copyMultiplier: NotRequired[float]
     copyMasterLogin: NotRequired[int]
     description: NotRequired[str]
+    timeCorrectionSeconds: NotRequired[int]
 
 
 class MT5AccountFilterDict(PostgresFilterDict):
@@ -95,6 +99,7 @@ class MT5AccountFilterDict(PostgresFilterDict):
     isCopying: NotRequired[int | FieldCondition[int] | None]
     copyMultiplier: NotRequired[float | FieldCondition[float] | None]
     copyMasterLogin: NotRequired[int | FieldCondition[int] | None]
+    timeCorrectionSeconds: NotRequired[int | FieldCondition[int] | None]
 
 
 class MT5AccountSortDict(PostgresSortDict):
@@ -103,6 +108,7 @@ class MT5AccountSortDict(PostgresSortDict):
     accountName: NotRequired[SortOrder]
     accountServer: NotRequired[SortOrder]
     programName: NotRequired[SortOrder]
+    timeCorrectionSeconds: NotRequired[SortOrder]
 
 
 class MT5AccountAction:
@@ -121,4 +127,5 @@ class MT5AccountAction:
             copyMultiplier=1.0,
             copyMasterLogin=0,
             description="",
+            timeCorrectionSeconds=0,
         )

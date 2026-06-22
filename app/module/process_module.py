@@ -145,7 +145,6 @@ class ProcessModule:
         self, program_name: str, show_terminal: bool = False
     ) -> ProcessOpenResult:
         open_new = False
-
         process_opened = await self.py_find_process(program_name)
         if process_opened:
             open_new = False
@@ -162,7 +161,10 @@ class ProcessModule:
                     program_name,
                 ]
                 if show_terminal:
-                    subprocess_proc = subprocess.Popen(command)
+                    subprocess_proc = subprocess.Popen(
+                        command,
+                        creationflags=subprocess.CREATE_NEW_CONSOLE,
+                    )
                 else:
                     subprocess_proc = subprocess.Popen(
                         command,

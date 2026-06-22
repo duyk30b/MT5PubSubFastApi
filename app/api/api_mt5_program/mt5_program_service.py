@@ -13,6 +13,7 @@ from app.postgres.entities.setting_entity import SettingKey
 from app.postgres.repositories.mt5_account_repository import mt5_account_repository
 from app.postgres.repositories.setting_repository import setting_repository
 from app.redis.cache.mt5_program_cache import MT5ProgramCache
+from app.setting import settings
 
 logger = logging.getLogger(__name__)
 
@@ -89,7 +90,9 @@ class MT5ProgramService:
                     program_name, f"Open MT5 program {program_name} with path {path}"
                 )
 
-            py_open_result = await process_module.py_start(program_name)
+            py_open_result = await process_module.py_start(
+                program_name, show_terminal=settings.ENV == "development"
+            )
             await MT5ProgramCache.program_data_set_py_process(
                 program_name, py_open_result["process_info"]
             )
@@ -127,7 +130,9 @@ class MT5ProgramService:
         await MT5ProgramCache.program_data_set_exe_process(
             program_name, exe_open_result["process_info"]
         )
-        py_open_result = await process_module.py_start(program_name)
+        py_open_result = await process_module.py_start(
+            program_name, show_terminal=settings.ENV == "development"
+        )
         await MT5ProgramCache.program_data_set_py_process(
             program_name, py_open_result["process_info"]
         )
@@ -162,6 +167,7 @@ class MT5ProgramService:
                         "copyMultiplier": 1,
                         "copyMasterLogin": 0,
                         "description": "",
+                        "timeCorrectionSeconds": 0,
                     },
                 )
             else:
@@ -193,8 +199,10 @@ class MT5ProgramService:
 
         login_key = account_info.get("login", 0)
 
-        await process_module.process_stop(py_process.get("pid", 0))
-        await process_module.process_stop(exe_process.get("pid", 0))
+        if bool(py_process.get("pid")) and bool(py_process.get("is_running")):
+            await process_module.process_stop(py_process["pid"])
+        if bool(exe_process.get("pid")) and bool(exe_process.get("is_running")):
+            await process_module.process_stop(exe_process["pid"])
 
         await MT5ProgramCache.program_data_set_account_info(program_name, {"login": 0})
         await MT5ProgramCache.program_data_set_position_list(program_name, [])

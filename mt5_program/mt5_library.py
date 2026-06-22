@@ -1,3 +1,4 @@
+import asyncio
 from typing import Any, Protocol
 
 import MetaTrader5 as mt5
@@ -22,17 +23,28 @@ class MT5ClientProtocol(Protocol):
     def symbol_info_tick(self, symbol: str) -> Any | None: ...
     def symbol_info(self, symbol: str) -> Any | None: ...
     def order_send(self, request: dict[str, Any]) -> Any: ...
+    def symbol_select(self, symbol: str, enable: bool) -> bool: ...
 
 
 class MT5Library:
     @staticmethod
-    def normalize_volume(
-        mt5_client: MT5ClientProtocol, symbol: str, volume: float
-    ) -> float:
+    async def symbol_info(mt5_client: MT5ClientProtocol, symbol: str) -> Any:
         symbol_info = mt5_client.symbol_info(symbol)
         if symbol_info is None:
             raise ValueError(f"Symbol {symbol} not found in MT5")
+        if not symbol_info.visible:
+            symbol_selected = mt5_client.symbol_select(symbol, True)
+            if not symbol_selected:
+                raise ValueError(f"Symbol {symbol} is not visible in MT5")
+            await asyncio.sleep(0.5)  # Wait for symbol to be selected
+            symbol_info = mt5_client.symbol_info(symbol)
+        return symbol_info
 
+    @staticmethod
+    async def normalize_volume(
+        mt5_client: MT5ClientProtocol, symbol: str, volume: float
+    ) -> float:
+        symbol_info = await MT5Library.symbol_info(mt5_client, symbol)
         volume_step = getattr(symbol_info, "volume_step", 0.01)
         volume_min = getattr(symbol_info, "volume_min", 0.01)
         volume_max = getattr(symbol_info, "volume_max", 100.0)
@@ -42,13 +54,15 @@ class MT5Library:
         return volume
 
     @staticmethod
-    def open_buy(
+    async def open_buy(
         mt5_client: MT5ClientProtocol,
         symbol: str,
         volume: float,
         comment: str = "",
     ) -> bool:
-        normalized_volume = MT5Library.normalize_volume(mt5_client, symbol, volume)
+        normalized_volume = await MT5Library.normalize_volume(
+            mt5_client, symbol, volume
+        )
         tick: Any = mt5_client.symbol_info_tick(symbol)
         if tick is None:
             raise ValueError(f"Tick not found for symbol {symbol}")
@@ -72,13 +86,15 @@ class MT5Library:
         return result
 
     @staticmethod
-    def open_sell(
+    async def open_sell(
         mt5_client: MT5ClientProtocol,
         symbol: str,
         volume: float,
         comment: str = "",
     ) -> bool:
-        normalized_volume = MT5Library.normalize_volume(mt5_client, symbol, volume)
+        normalized_volume = await MT5Library.normalize_volume(
+            mt5_client, symbol, volume
+        )
         tick: Any = mt5_client.symbol_info_tick(symbol)
         if tick is None:
             raise ValueError(f"Tick not found for symbol {symbol}")
@@ -102,7 +118,7 @@ class MT5Library:
         return result
 
     @staticmethod
-    def close(
+    async def close(
         mt5_client: MT5ClientProtocol,
         position: MT5ProgramPositionInfo,
         comment: str = "",
@@ -116,7 +132,7 @@ class MT5Library:
             raise ValueError(f"Symbol not found for position {ticket}")
         if not ticket:
             raise ValueError(f"Ticket not found for position with symbol {symbol}")
-
+        await MT5Library.symbol_info(mt5_client, symbol)
         tick: Any = mt5_client.symbol_info_tick(symbol)
         if tick is None:
             raise ValueError(f"Tick not found for symbol {symbol} in position {ticket}")

@@ -1,9 +1,11 @@
+from typing import Literal
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    ENV: Literal["development", "production"] = "development"
     app_name: str = "FastAPI Demo"
-    env: str = "dev"
     api_port: int = 8000
 
     jwt_access_key: str = "default_access_secret_key"

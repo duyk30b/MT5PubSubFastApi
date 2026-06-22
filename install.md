@@ -1,19 +1,31 @@
 # Install app on Windows
-1. Install make:
+##  1. Config
+- Kiểm tra và chỉnh giờ Windows
+- Auto login windows
+```
+reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v AutoAdminLogon /t REG_SZ /d 1 /f
+reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v DefaultUserName /t REG_SZ /d Administrator /f
+reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v DefaultPassword /t REG_SZ /d nvD@k30bdhyhp /f
+reg query "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v AutoAdminLogon
+```
+- Bật Virtual Terminal Processing cho CMD vĩnh viễn
+`reg add HKCU\Console /v VirtualTerminalLevel /t REG_DWORD /d 1 /f`
+
+## 2. Install make:
 ```
 winget install ezwinports.make
 where make
 make --version
 ```
-2. Install Visual C++ Redistributable for Visual Studio 2015
+## 3. Install Visual C++ Redistributable for Visual Studio 2015
 - https://www.microsoft.com/en-us/download/details.aspx?id=48145
 
-3. Install Gitbash
-4. Install SSH
-5. Install Nginx
+## 4. Install Gitbash
+## 5. Install SSH
+## 6. Install Nginx
 - Download and install: https://nginx.org/en/download.html
 
-6. Install Redis
+## 7. Install Redis
 - Download and Install: https://github.com/microsoftarchive/redis/releases
 - Run Service on folder install
 ```
@@ -52,9 +64,9 @@ sc delete Redis
 ```
 
 
-7. Install uv and app
+## 8. Install uv and app
 
-8. Install Task Scheduler
+## 9. Install Task Scheduler
 - Power shell
 ```
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass 

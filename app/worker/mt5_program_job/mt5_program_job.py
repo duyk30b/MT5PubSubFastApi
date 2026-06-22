@@ -1,6 +1,6 @@
 import asyncio
 import logging
-import time
+from datetime import datetime, timezone
 
 from app.redis.cache.mt5_program_cache import MT5ProgramCache
 from app.redis.model.mt5_program_model import MT5ProgramInfo
@@ -30,7 +30,11 @@ class Mt5ProgramJob:
 
                 await SocketMt5Handler.emit_mt5_program_info(
                     data=SocketMT5ProgramInfo(
-                        event_time=time.strftime("%Y-%m-%d %H:%M:%S"),
+                        event_time=(
+                            datetime.now(timezone.utc)
+                            .isoformat(timespec="milliseconds")
+                            .replace("+00:00", "Z")
+                        ),
                         mt5_program_info_list=mt5_program_info_list,
                     )
                 )

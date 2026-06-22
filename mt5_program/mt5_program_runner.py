@@ -3,6 +3,7 @@ import asyncio
 import logging
 import time
 import traceback
+from datetime import datetime, timezone
 from typing import cast
 
 import MetaTrader5 as mt5
@@ -23,7 +24,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 mt5_client = cast(MT5ClientProtocol, mt5)
-TIME_SLEEP_SECONDS = 0.25
+TIME_SLEEP_SECONDS = 0.2
 
 
 async def main(program_name: str):
@@ -58,7 +59,11 @@ async def main(program_name: str):
 
     try:
         while True:
-            refresh_time = time.strftime("%Y-%m-%d %H:%M:%S")
+            refresh_time = (
+                datetime.now(timezone.utc)
+                .isoformat(timespec="milliseconds")
+                .replace("+00:00", "Z")
+            )
 
             account_info_follower_raw = mt5_client.account_info()
             if not account_info_follower_raw:
@@ -121,6 +126,9 @@ async def main(program_name: str):
                 )
                 await asyncio.sleep(5)
                 continue
+
+            if account_info_follower.get("currency") == "USC":
+                continue  # Nếu là tài khoản cent, bỏ qua copy trading vì không hỗ trợ
 
             ### === Xử lý copy trading nếu có thiết lập === ###
             if mt5_account_follower["isCopying"]:
@@ -211,7 +219,7 @@ async def main(program_name: str):
                                 f"{program_name}: Cannot find symbol for ticketMasterId {ticket} in follower account, skipping close"
                             )
                             continue
-                        MT5Library.close(
+                        await MT5Library.close(
                             mt5_client=mt5_client,
                             position=position_follower,
                             comment=f"{PREFIX}{ticket}",
@@ -225,13 +233,12 @@ async def main(program_name: str):
                         )
 
                 if tickets_to_open:
-                    tick = mt5_client.symbol_info_tick("EURUSD")
-                    time_msc = tick.time_msc if tick else 0
                     account_info_master = (
                         await MT5ProgramCache.program_data_get_account_info(
                             program_name_master
                         )
                     )
+
                     if not account_info_master:
                         await MT5ProgramCache.program_error_push(
                             program_name,
@@ -263,11 +270,14 @@ async def main(program_name: str):
                             )
                             continue
 
-                        time_update = position_master.get("time_update_msc", 0)
+                        time_position = (
+                            position_master.get("time_update_msc", 0)
+                            + mt5_account_master["timeCorrectionSeconds"] * 1000
+                        )
+                        time_now = int(time.time() * 1000)
 
-                        if (
-                            time_msc - time_update > 5 * 60 * 1000
-                        ):  # Nếu lệnh đã cũ hơn 5 phút, bỏ qua không copy
+                        # Nếu lệnh đã cũ hơn 5 phút, bỏ qua không copy
+                        if time_now - time_position > 5 * 60 * 1000:
                             continue
 
                         symbol = position_master.get("symbol", "")
@@ -279,14 +289,14 @@ async def main(program_name: str):
                         )
 
                         if position_master.get("type") == 0:  # Buy
-                            MT5Library.open_buy(
+                            await MT5Library.open_buy(
                                 mt5_client=mt5_client,
                                 symbol=symbol,
                                 volume=volume_follower,
                                 comment=f"{PREFIX}{ticket}",
                             )
                         elif position_master.get("type") == 1:  # Sell
-                            MT5Library.open_sell(
+                            await MT5Library.open_sell(
                                 mt5_client=mt5_client,
                                 symbol=symbol,
                                 volume=volume_follower,

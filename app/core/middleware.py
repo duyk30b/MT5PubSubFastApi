@@ -1,8 +1,8 @@
-from datetime import datetime, timezone
-from math import log
+import logging
 import time as time_module
+from datetime import datetime, timezone
 from typing import Awaitable, Callable
-import traceback
+
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
@@ -10,7 +10,6 @@ from app.core.exception import AppExceptionHandler, AuthenticationException
 from app.module.token_module import TokenModule
 from app.redis.cache.user_data_cache import userDataCache
 from app.redis.cache.user_login_cache import userLoginCache
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +74,7 @@ class AppMiddleware(BaseHTTPMiddleware):
             response.headers["X-Time-Start"] = time_start_string
             response.headers["X-Time-Duration"] = str(duration * 1000) + "ms"
             response.headers["X-Time-End"] = time_end_string
-            print(
+            logger.info(
                 f"{request.method} | {request.url} | {request.state.ip} | {request.state.userId} - {duration:.3f}s"
             )
             return response

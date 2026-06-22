@@ -1,10 +1,16 @@
 from logging.config import fileConfig
 
+from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context
-from app.postgres.postgres_config import postgres_settings
-from app.postgres.postgres_entity import PostgresEntity
+
+x_args = context.get_x_argument(as_dictionary=True)
+env_file = x_args.get("env_file", ".env").strip()
+load_dotenv(env_file)
+
+from app.postgres.postgres_config import postgres_settings  # noqa: E402
+from app.postgres.postgres_entity import PostgresEntity  # noqa: E402
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

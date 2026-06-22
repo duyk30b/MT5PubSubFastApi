@@ -44,7 +44,7 @@ class Mt5AccountService:
         body: Mt5AccountCreateBody,
     ) -> dict[str, Any]:
         existed = await mt5_account_repository.find_one(
-            db, {"accountLogin": body.mt5Account.accountLogin}
+            db, {"accountLogin": body.accountLogin}
         )
         if existed:
             raise BusinessException("AccountLogin already exists")
@@ -52,17 +52,18 @@ class Mt5AccountService:
         mt5Account = await mt5_account_repository.insert_one(
             db,
             MT5AccountCreateDict(
-                accountType=body.mt5Account.accountType,
-                accountLogin=body.mt5Account.accountLogin,
-                accountName=body.mt5Account.accountName,
-                accountServer=body.mt5Account.accountServer,
-                accountPassword=body.mt5Account.accountPassword,
-                programName=body.mt5Account.programName,
-                isOpening=body.mt5Account.isOpening,
-                isCopying=body.mt5Account.isCopying,
-                copyMultiplier=body.mt5Account.copyMultiplier,
-                copyMasterLogin=body.mt5Account.copyMasterLogin,
-                description=body.mt5Account.description,
+                accountType=body.accountType,
+                accountLogin=body.accountLogin,
+                accountName=body.accountName,
+                accountServer=body.accountServer,
+                accountPassword=body.accountPassword,
+                programName=body.programName,
+                isOpening=body.isOpening,
+                isCopying=body.isCopying,
+                copyMultiplier=body.copyMultiplier,
+                copyMasterLogin=body.copyMasterLogin,
+                description=body.description,
+                timeCorrectionSeconds=body.timeCorrectionSeconds,
             ),
         )
 
@@ -84,10 +85,12 @@ class Mt5AccountService:
             db,
             mt5_account_id,
             {
-                "accountType": body.mt5Account.accountType,
-                "copyMultiplier": body.mt5Account.copyMultiplier,
-                "copyMasterLogin": body.mt5Account.copyMasterLogin,
-                "description": body.mt5Account.description,
+                "accountType": body.accountType,
+                "copyMultiplier": body.copyMultiplier,
+                "copyMasterLogin": body.copyMasterLogin,
+                "description": body.description,
+                "programName": body.programName,
+                "timeCorrectionSeconds": body.timeCorrectionSeconds,
             },
         )
         if not mt5Account:

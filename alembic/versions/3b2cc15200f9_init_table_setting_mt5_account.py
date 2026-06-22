@@ -44,6 +44,7 @@ def upgrade() -> None:
             "copyMultiplier" FLOAT NOT NULL DEFAULT 1, 
             "copyMasterLogin" BIGINT NOT NULL DEFAULT 0, 
             "description" VARCHAR(255), 
+            "timeCorrectionSeconds" INTEGER NOT NULL DEFAULT 0,
             PRIMARY KEY ("id")
         );
         CREATE INDEX "ix_MT5Account_id" ON "MT5Account" ("id");

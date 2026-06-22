@@ -1,5 +1,7 @@
 from typing import Any, Awaitable, Set, cast
 
+from redis.asyncio.client import Pipeline
+
 from app.redis.redis_connection import RedisConnection
 
 
@@ -181,7 +183,7 @@ class RedisBase:
 
     # ── Pipeline ────────────────────────────────────────────────────────
 
-    def _pipeline(self, transaction: bool = True):
+    def _pipeline(self, transaction: bool = True) -> Pipeline:
         """Return a pipeline context for batching commands."""
         return self._redis.pipeline(transaction=transaction)
         # Example:

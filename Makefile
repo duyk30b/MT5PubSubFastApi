@@ -4,6 +4,12 @@ dev:
 prod:
 	.venv\Scripts\python.exe -m uvicorn app.main:socket_app --host 0.0.0.0 --port 8000 --workers 1 --env-file .env.prod
 
+migration-dev:
+	.venv\Scripts\alembic.exe -x env_file=.env.dev upgrade head
+
+migration-prod:
+	.venv\Scripts\alembic.exe -x env_file=.env.prod upgrade head
+
 type:
 	uv run pyright app
 	uv run mypy app
