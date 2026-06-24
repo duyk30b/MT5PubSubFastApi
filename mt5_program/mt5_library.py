@@ -60,16 +60,13 @@ class MT5Library:
         volume: float,
         comment: str = "",
     ) -> bool:
-        normalized_volume = await MT5Library.normalize_volume(
-            mt5_client, symbol, volume
-        )
         tick: Any = mt5_client.symbol_info_tick(symbol)
         if tick is None:
             raise ValueError(f"Tick not found for symbol {symbol}")
         request: dict[str, Any] = {
             "action": mt5.TRADE_ACTION_DEAL,
             "symbol": symbol,
-            "volume": normalized_volume,
+            "volume": volume,
             "type": mt5.ORDER_TYPE_BUY,
             "price": tick.ask,
             "deviation": 10,
@@ -92,16 +89,13 @@ class MT5Library:
         volume: float,
         comment: str = "",
     ) -> bool:
-        normalized_volume = await MT5Library.normalize_volume(
-            mt5_client, symbol, volume
-        )
         tick: Any = mt5_client.symbol_info_tick(symbol)
         if tick is None:
             raise ValueError(f"Tick not found for symbol {symbol}")
         request: dict[str, Any] = {
             "action": mt5.TRADE_ACTION_DEAL,
             "symbol": symbol,
-            "volume": normalized_volume,
+            "volume": volume,
             "type": mt5.ORDER_TYPE_SELL,
             "price": tick.bid,
             "deviation": 10,

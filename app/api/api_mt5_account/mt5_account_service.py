@@ -1,4 +1,5 @@
 import logging
+from re import A
 from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -52,18 +53,20 @@ class Mt5AccountService:
         mt5Account = await mt5_account_repository.insert_one(
             db,
             MT5AccountCreateDict(
+                accountRole=body.accountRole,
                 accountType=body.accountType,
                 accountLogin=body.accountLogin,
                 accountName=body.accountName,
                 accountServer=body.accountServer,
                 accountPassword=body.accountPassword,
+                symbolSuffix=body.symbolSuffix,
+                timeCorrectionSeconds=body.timeCorrectionSeconds,
                 programName=body.programName,
                 isOpening=body.isOpening,
                 isCopying=body.isCopying,
                 copyMultiplier=body.copyMultiplier,
                 copyMasterLogin=body.copyMasterLogin,
                 description=body.description,
-                timeCorrectionSeconds=body.timeCorrectionSeconds,
             ),
         )
 
@@ -85,12 +88,14 @@ class Mt5AccountService:
             db,
             mt5_account_id,
             {
+                "accountRole": body.accountRole,
                 "accountType": body.accountType,
+                "symbolSuffix": body.symbolSuffix,
+                "timeCorrectionSeconds": body.timeCorrectionSeconds,
+                "programName": body.programName,
                 "copyMultiplier": body.copyMultiplier,
                 "copyMasterLogin": body.copyMasterLogin,
                 "description": body.description,
-                "programName": body.programName,
-                "timeCorrectionSeconds": body.timeCorrectionSeconds,
             },
         )
         if not mt5Account:

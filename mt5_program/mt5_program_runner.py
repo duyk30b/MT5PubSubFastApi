@@ -4,7 +4,7 @@ import logging
 import time
 import traceback
 from datetime import datetime, timezone
-from typing import cast
+from typing import Literal, cast
 
 import MetaTrader5 as mt5
 
@@ -24,18 +24,16 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 mt5_client = cast(MT5ClientProtocol, mt5)
-TIME_SLEEP_SECONDS = 0.2
+TIME_SLEEP_SECONDS = 0.1
 
 
 async def main(program_name: str):
     signal_time_1 = time.perf_counter()
     await RedisConnection.connect()
-    await MT5ProgramCache.program_log_push(
-        program_name, "Connected to Redis successfully !"
-    )
     signal_time_2 = time.perf_counter()
-    print(
-        f"{program_name}: Connected to Redis successfully in {(signal_time_2 - signal_time_1) * 1000:.4f} milliseconds!"
+    await MT5ProgramCache.program_log_push(
+        program_name,
+        f"Connected to Redis successfully in {(signal_time_2 - signal_time_1) * 1000:.4f} milliseconds!",
     )
 
     path = await MT5ProgramCache.program_data_get_path(program_name)
@@ -43,7 +41,6 @@ async def main(program_name: str):
         await MT5ProgramCache.program_error_push(
             program_name, "MT5 program path not found"
         )
-        print(f"{program_name}: MT5 program path not found")
         return
 
     if not mt5_client.initialize(path):
@@ -51,11 +48,9 @@ async def main(program_name: str):
             program_name,
             f"MT5 initialize failed: {mt5_client.last_error()}",
         )
-        print(f"{program_name}: MT5 initialize failed: {mt5_client.last_error()}")
         return
 
     await MT5ProgramCache.program_log_push(program_name, f"MT5 open with path: {path}")
-    print(f"{program_name}: MT5 open with path: {path}")
 
     try:
         while True:
@@ -72,7 +67,6 @@ async def main(program_name: str):
                     program_name,
                     f"MT5 account_info failed: {last_error}",
                 )
-                print(f"{program_name}: MT5 account_info failed: {last_error}")
                 await MT5ProgramCache.program_data_set_runtime_snapshot(
                     program_name=program_name,
                     refresh_time=refresh_time,
@@ -92,7 +86,6 @@ async def main(program_name: str):
                     program_name,
                     f"MT5 positions_get failed: {last_error}",
                 )
-                print(f"{program_name}: MT5 positions_get failed: {last_error}")
                 await MT5ProgramCache.program_data_set_runtime_snapshot(
                     program_name=program_name,
                     refresh_time=refresh_time,
@@ -121,9 +114,6 @@ async def main(program_name: str):
                     program_name,
                     f"Follower account with login {login_key_follower} not found in account settings, skipping copy trading",
                 )
-                print(
-                    f"{program_name}: Follower account with login {login_key_follower} not found in account settings, skipping copy trading"
-                )
                 await asyncio.sleep(5)
                 continue
 
@@ -143,9 +133,6 @@ async def main(program_name: str):
                         program_name,
                         f"Master account with login {login_key_master} not found in account settings, skipping copy trading",
                     )
-                    print(
-                        f"{program_name}: Master account with login {login_key_master} not found in account settings, skipping copy trading"
-                    )
                     await asyncio.sleep(5)
                     continue
 
@@ -159,9 +146,6 @@ async def main(program_name: str):
                     await MT5ProgramCache.program_error_push(
                         program_name,
                         f"Master program {program_name_master} is not running, skipping copy trading",
-                    )
-                    print(
-                        f"{program_name}: Master program {program_name_master} is not running, skipping copy trading"
                     )
                     await asyncio.sleep(5)
                     continue
@@ -204,9 +188,6 @@ async def main(program_name: str):
                                 program_name,
                                 f"Cannot find follower position with ticketMasterId {ticket} in follower account, skipping close",
                             )
-                            print(
-                                f"{program_name}: Cannot find follower position with ticketMasterId {ticket} in follower account, skipping close"
-                            )
                             continue
                         symbol = position_follower.get("symbol", "")
                         volume = position_follower.get("volume", 0.0)
@@ -214,9 +195,6 @@ async def main(program_name: str):
                             await MT5ProgramCache.program_error_push(
                                 program_name,
                                 f"Cannot find symbol for ticketMasterId {ticket} in follower account, skipping close",
-                            )
-                            print(
-                                f"{program_name}: Cannot find symbol for ticketMasterId {ticket} in follower account, skipping close"
                             )
                             continue
                         await MT5Library.close(
@@ -226,10 +204,7 @@ async def main(program_name: str):
                         )
                         await MT5ProgramCache.program_log_push(
                             program_name,
-                            f"Close Position - Symbol:{symbol}, volume:{volume}. Closed from master position {ticket}",
-                        )
-                        print(
-                            f"{program_name}: Close Position - Symbol:{symbol}, volume:{volume}. Closed from master position {ticket}"
+                            f"Close Position - {symbol}, volume:{volume}. Closed from master position {ticket}",
                         )
 
                 if tickets_to_open:
@@ -244,17 +219,11 @@ async def main(program_name: str):
                             program_name,
                             f"Cannot get account info for master account {login_key_master}, skipping copy positions",
                         )
-                        print(
-                            f"{program_name}: Cannot get account info for master account {login_key_master}, skipping copy positions"
-                        )
                         continue
                     if not account_info_master.get("balance", 0.0) > 0:
                         await MT5ProgramCache.program_error_push(
                             program_name,
                             f"Master account {login_key_master} has non-positive balance, skipping copy positions",
-                        )
-                        print(
-                            f"{program_name}: Master account {login_key_master} has non-positive balance, skipping copy positions"
                         )
                         continue
 
@@ -264,9 +233,6 @@ async def main(program_name: str):
                             await MT5ProgramCache.program_error_push(
                                 program_name,
                                 f"Cannot find symbol for ticket {ticket} in master account, skipping copy",
-                            )
-                            print(
-                                f"{program_name}: Cannot find symbol for ticket {ticket} in master account, skipping copy"
                             )
                             continue
 
@@ -280,44 +246,50 @@ async def main(program_name: str):
                         if time_now - time_position > 5 * 60 * 1000:
                             continue
 
-                        symbol = position_master.get("symbol", "")
+                        symbol_master = position_master.get("symbol", "")
+                        symbol_suffix_master = mt5_account_master["symbolSuffix"]
+                        symbol_normalized = symbol_master
+                        if symbol_suffix_master and symbol_master.endswith(
+                            symbol_suffix_master
+                        ):
+                            symbol_normalized = symbol_master[
+                                : -len(symbol_suffix_master)
+                            ]
+                        symbol_suffix_follower = mt5_account_follower["symbolSuffix"]
+                        symbol_follower = symbol_normalized + symbol_suffix_follower
+
                         volume_master = position_master.get("volume", 0.0)
-                        volume_follower = (
-                            volume_master
-                            * account_info_follower.get("balance", 0.0)
-                            / account_info_master.get("balance", 0.0)
+                        volume_follower = await MT5Library.normalize_volume(
+                            mt5_client,
+                            symbol_follower,
+                            (
+                                volume_master
+                                * account_info_follower.get("equity", 0.0)
+                                / account_info_master.get("equity", 0.0)
+                            ),
+                        )
+                        position_type: Literal["Buy", "Sell"] = (
+                            "Buy" if position_master.get("type", 0) == 0 else "Sell"
                         )
 
-                        if position_master.get("type") == 0:  # Buy
+                        if position_type == "Buy":
                             await MT5Library.open_buy(
                                 mt5_client=mt5_client,
-                                symbol=symbol,
+                                symbol=symbol_follower,
                                 volume=volume_follower,
                                 comment=f"{PREFIX}{ticket}",
                             )
-                        elif position_master.get("type") == 1:  # Sell
+                        elif position_type == "Sell":
                             await MT5Library.open_sell(
                                 mt5_client=mt5_client,
-                                symbol=symbol,
+                                symbol=symbol_follower,
                                 volume=volume_follower,
                                 comment=f"{PREFIX}{ticket}",
                             )
-                        else:
-                            await MT5ProgramCache.program_error_push(
-                                program_name,
-                                f"Unknown position type {position_master.get('type')} for ticket {ticket} in master account, skipping copy",
-                            )
-                            print(
-                                f"{program_name}: Unknown position type {position_master.get('type')} for ticket {ticket} in master account, skipping copy"
-                            )
-                            continue
 
                         await MT5ProgramCache.program_log_push(
                             program_name,
-                            f"Open Position - Symbol:{symbol}, volume:{volume_follower}. Copied from master position {ticket}",
-                        )
-                        print(
-                            f"{program_name}: Open Position - Symbol:{symbol}, volume:{volume_follower}. Copied from master position {ticket}"
+                            f"Open {position_type} - {symbol_follower}, volume:{volume_follower}. Copied from master position {ticket}",
                         )
 
             await asyncio.sleep(TIME_SLEEP_SECONDS)

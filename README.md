@@ -58,6 +58,7 @@ from app.postgres.entities.user_entity import UserEntity  # noqa
 ## 3. Run migrate generate
 - Generate
   `alembic revision --autogenerate -m "demo_version"`
+  `make alembic-dev ARGS="revision --autogenerate -m 'demo_version'"`
 - Get SQL
   `alembic upgrade head --sql`
 - Run

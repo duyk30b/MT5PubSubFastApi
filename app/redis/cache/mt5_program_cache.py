@@ -222,6 +222,7 @@ class MT5ProgramCacheBase(RedisBase):
             .replace("+00:00", "Z")
         )
         message = f"{time_str} - {error_message}"
+        print(f"{program_name}: {message}")
         async with self._pipeline(transaction=False) as pipe:
             pipe.rpush(key, message)
             pipe.ltrim(key, -100, -1)
@@ -243,7 +244,7 @@ class MT5ProgramCacheBase(RedisBase):
             .replace("+00:00", "Z")
         )
         message = f"{time_str} - {log}"
-
+        print(f"{program_name}: {message}")
         async with self._pipeline(transaction=False) as pipe:
             pipe.rpush(key, message)
             pipe.ltrim(key, -200, -1)

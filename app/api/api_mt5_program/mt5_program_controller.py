@@ -17,20 +17,12 @@ async def refresh_all(
     return await mt5_program_service.refresh_all(db=db)
 
 
-@mt5_program_controller.post("/open_all")
-async def open_all(
+@mt5_program_controller.post("/clear_all_log")
+async def clear_all_log(
     state: RequestState = Depends(RequestDepends.state),
     db: AsyncSession = Depends(PostgresConnection.get_db),
 ):
-    return await mt5_program_service.open_all(db=db)
-
-
-@mt5_program_controller.post("/close_all")
-async def close_all(
-    state: RequestState = Depends(RequestDepends.state),
-    db: AsyncSession = Depends(PostgresConnection.get_db),
-):
-    return await mt5_program_service.close_all(db=db)
+    return await mt5_program_service.clear_all_log()
 
 
 @mt5_program_controller.post("/refresh/{program_name}")

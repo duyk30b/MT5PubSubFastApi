@@ -33,18 +33,20 @@ def upgrade() -> None:
 
         CREATE TABLE "MT5Account" (
             "id" SERIAL NOT NULL, 
+            "accountRole" INTEGER NOT NULL DEFAULT 0,
             "accountType" INTEGER NOT NULL DEFAULT 0, 
             "accountLogin" BIGINT NOT NULL DEFAULT 0, 
             "accountName" VARCHAR(50) NOT NULL, 
             "accountServer" VARCHAR(100) NOT NULL, 
             "accountPassword" VARCHAR(50) NOT NULL, 
+            "symbolSuffix" VARCHAR(10) NOT NULL DEFAULT '',
+            "timeCorrectionSeconds" INTEGER NOT NULL DEFAULT 0,
             "programName" VARCHAR(50) NOT NULL, 
             "isOpening" INTEGER NOT NULL DEFAULT 0,
             "isCopying" INTEGER NOT NULL DEFAULT 0,
             "copyMultiplier" FLOAT NOT NULL DEFAULT 1, 
             "copyMasterLogin" BIGINT NOT NULL DEFAULT 0, 
-            "description" VARCHAR(255), 
-            "timeCorrectionSeconds" INTEGER NOT NULL DEFAULT 0,
+            "description" VARCHAR(255) DEFAULT '', 
             PRIMARY KEY ("id")
         );
         CREATE INDEX "ix_MT5Account_id" ON "MT5Account" ("id");

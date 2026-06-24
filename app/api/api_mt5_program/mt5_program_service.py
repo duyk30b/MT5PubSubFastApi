@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exception import BusinessException
 from app.module.process_module import ProcessModule
-from app.postgres.entities.mt5_account_entity import MT5AccountType
+from app.postgres.entities.mt5_account_entity import MT5AccountRole, MT5AccountType
 from app.postgres.entities.setting_entity import SettingKey
 from app.postgres.repositories.mt5_account_repository import mt5_account_repository
 from app.postgres.repositories.setting_repository import setting_repository
@@ -105,11 +105,11 @@ class MT5ProgramService:
         await process_module.py_cleanup(program_name_list)
         await process_module.exe_cleanup(path_parent="", path_list_keep=path_list)
 
-    async def open_all(self, db: AsyncSession):
-        pass
-
-    async def close_all(self, db: AsyncSession):
-        pass
+    async def clear_all_log(self):
+        program_name_list = await MT5ProgramCache.get_program_name_list()
+        for program_name in program_name_list:
+            await MT5ProgramCache.program_log_clear(program_name)
+            await MT5ProgramCache.program_error_clear(program_name)
 
     async def refresh(self, db: AsyncSession, program_name: str):
         pass
@@ -156,18 +156,20 @@ class MT5ProgramService:
                 await mt5_account_repository.insert_one(
                     db=db,
                     data={
-                        "accountType": MT5AccountType.NORMAL,
+                        "accountRole": MT5AccountRole.Normal,
+                        "accountType": MT5AccountType.Unknown,
                         "accountLogin": login_Key,
                         "accountName": account_info.get("name", ""),
                         "accountServer": account_info.get("server", ""),
                         "accountPassword": "",
+                        "symbolSuffix": "",
+                        "timeCorrectionSeconds": 0,
                         "programName": program_name,
                         "isOpening": 1,
                         "isCopying": 0,
                         "copyMultiplier": 1,
                         "copyMasterLogin": 0,
                         "description": "",
-                        "timeCorrectionSeconds": 0,
                     },
                 )
             else:

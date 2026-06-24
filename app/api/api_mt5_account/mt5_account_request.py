@@ -3,7 +3,7 @@ import json
 from fastapi import Query
 from pydantic import BaseModel, Field
 
-from app.postgres.entities.mt5_account_entity import MT5AccountType
+from app.postgres.entities.mt5_account_entity import MT5AccountRole, MT5AccountType
 
 
 class Mt5AccountFilter(BaseModel):
@@ -37,24 +37,28 @@ class Mt5AccountQuery(BaseModel):
 
 
 class Mt5AccountCreateBody(BaseModel):
+    accountRole: MT5AccountRole = Field(...)
     accountType: MT5AccountType = Field(...)
     accountLogin: int = Field(...)
     accountName: str = Field(...)
     accountServer: str = Field(...)
     accountPassword: str = Field(...)
+    symbolSuffix: str = Field(...)
+    timeCorrectionSeconds: int = Field(...)
+    programName: str = Field(...)
     copyMultiplier: float = Field(...)
     copyMasterLogin: int = Field(...)
     description: str = Field(...)
     isOpening: int = Field(...)
     isCopying: int = Field(...)
-    programName: str = Field(...)
-    timeCorrectionSeconds: int = Field(...)
 
 
 class Mt5AccountUpdateBody(BaseModel):
+    accountRole: MT5AccountRole = Field(...)
     accountType: MT5AccountType = Field(...)
+    symbolSuffix: str = Field(...)
+    timeCorrectionSeconds: int = Field(...)
+    programName: str = Field(...)
     copyMultiplier: float = Field(...)
     copyMasterLogin: int = Field(...)
     description: str = Field(...)
-    programName: str = Field(...)
-    timeCorrectionSeconds: int = Field(...)
