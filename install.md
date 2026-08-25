@@ -77,3 +77,8 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass 
 & "C:\Projects\MT5PubSubFastApi\scripts\start_nginx.ps1"
 ```
+
+## 10. When upgrade
+- cd C:\Projects\MT5PubSubFastApi
+- `make production-upgrade`
+- Restart windows => Auto restart app

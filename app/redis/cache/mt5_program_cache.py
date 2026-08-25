@@ -201,6 +201,8 @@ class MT5ProgramCacheBase(RedisBase):
     async def program_data_set_position_list(
         self, program_name: str, position_list: list[MT5ProgramPositionInfo]
     ) -> None:
+        if not position_list:
+            return  # Với trường hợp account đổi password, position_list sẽ rỗng, nhưng vẫn cần lưu refresh_time và account_info. Do đó, không xóa key position_list trong redis, mà chỉ cần bỏ qua việc set position_list nếu nó rỗng.
         await self._hash_set(
             _key_program_data(program_name),
             {"position_list": PyObject.json_dump(position_list)},
