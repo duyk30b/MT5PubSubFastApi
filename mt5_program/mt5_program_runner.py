@@ -154,12 +154,9 @@ async def main(program_name: str):
                     position.get("ticket", 0) for position in position_list_master
                 }
                 tickets_followed: set[int] = set()
-                PREFIX = f"{mt5_account_master['id']}_"
 
                 def _ticket_from_comment(comment: str) -> int | None:
-                    if not comment.startswith(PREFIX):
-                        return None
-                    ticket_suffix = comment[len(PREFIX) :].lstrip("_")
+                    ticket_suffix = comment.rsplit("_", 1)[-1]
                     if not ticket_suffix.isdigit():
                         return None
                     return int(ticket_suffix)
@@ -200,7 +197,7 @@ async def main(program_name: str):
                         await MT5Library.close(
                             mt5_client=mt5_client,
                             position=position_follower,
-                            comment=f"{PREFIX}{ticket}",
+                            comment=f"{ticket}",
                         )
                         await MT5ProgramCache.program_log_push(
                             program_name,
@@ -277,14 +274,14 @@ async def main(program_name: str):
                                 mt5_client=mt5_client,
                                 symbol=symbol_follower,
                                 volume=volume_follower,
-                                comment=f"{PREFIX}{ticket}",
+                                comment=f"{ticket}",
                             )
                         elif position_type == "Sell":
                             await MT5Library.open_sell(
                                 mt5_client=mt5_client,
                                 symbol=symbol_follower,
                                 volume=volume_follower,
-                                comment=f"{PREFIX}{ticket}",
+                                comment=f"{ticket}",
                             )
 
                         await MT5ProgramCache.program_log_push(
@@ -298,7 +295,7 @@ async def main(program_name: str):
         error_detail = traceback.format_exc()
         await MT5ProgramCache.program_error_push(
             program_name,
-            f"MT5 program runner encountered an error:  {str(e)}\n{error_detail}",
+            f"MT5 program runner encountered an error:  {e!s}\n{error_detail}",
         )
 
     finally:
