@@ -201,7 +201,7 @@ async def main(program_name: str):
                         )
                         await MT5ProgramCache.program_log_push(
                             program_name,
-                            f"Close Position - {symbol}, volume:{volume}. Closed from master position {ticket}",
+                            f"Close Position - {symbol}, volume:{volume}, ticket: {ticket}",
                         )
 
                 if tickets_to_open:
@@ -284,9 +284,10 @@ async def main(program_name: str):
                                 comment=f"{ticket}",
                             )
 
+                        comment_master = position_master.get("comment", "")
                         await MT5ProgramCache.program_log_push(
                             program_name,
-                            f"Open {position_type} - {symbol_follower}, volume:{volume_follower}. Copied from master position {ticket}",
+                            f"Open {position_type} - {symbol_follower}, volume:{volume_follower}, comment_master: {comment_master}, ticket: {ticket}",
                         )
 
             await asyncio.sleep(TIME_SLEEP_SECONDS)
