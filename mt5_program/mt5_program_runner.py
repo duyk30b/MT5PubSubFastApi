@@ -52,8 +52,9 @@ async def main(program_name: str):
 
     await MT5ProgramCache.program_log_push(program_name, f"MT5 open with path: {path}")
 
-    try:
-        while True:
+    while True:
+        try:
+            await asyncio.sleep(TIME_SLEEP_SECONDS)
             refresh_time = (
                 datetime.now(timezone.utc)
                 .isoformat(timespec="milliseconds")
@@ -73,7 +74,7 @@ async def main(program_name: str):
                     account_info={"login": 0},
                     position_list=[],
                 )
-                break
+                raise ValueError("Has no account info from MT5")
 
             account_info_follower: MT5ProgramAccountInfo = (
                 account_info_follower_raw._asdict()
@@ -92,7 +93,7 @@ async def main(program_name: str):
                     account_info=account_info_follower,
                     position_list=[],
                 )
-                break
+                raise ValueError("Has no positions from MT5")
 
             position_list_follower: list[MT5ProgramPositionInfo] = [
                 position._asdict() for position in position_list_raw
@@ -110,15 +111,17 @@ async def main(program_name: str):
                 login_key_follower
             )
             if not mt5_account_follower:
+                message_err = f"Follower account with login {login_key_follower} not found in account settings, skipping copy trading"
                 await MT5ProgramCache.program_error_push(
                     program_name,
-                    f"Follower account with login {login_key_follower} not found in account settings, skipping copy trading",
+                    message_err,
                 )
-                await asyncio.sleep(5)
-                continue
+                raise ValueError(message_err)
 
             if account_info_follower.get("currency") == "USC":
-                continue  # Nếu là tài khoản cent, bỏ qua copy trading vì không hỗ trợ
+                raise ValueError(
+                    "Follower account is a cent account, skipping copy trading"
+                )
 
             ### === Xử lý copy trading nếu có thiết lập === ###
             if mt5_account_follower["isCopying"]:
@@ -126,15 +129,22 @@ async def main(program_name: str):
                 mt5_account_master = await MT5ProgramCache.mt5_account_get_by_login_key(
                     login_key_master
                 )
-                program_name_master = mt5_account_master["programName"]
-
-                if not mt5_account_master["id"] or not program_name_master:
+                if not mt5_account_master["id"]:
+                    message_err = f"Master account with login {login_key_master} not found in account settings, skipping copy trading"
                     await MT5ProgramCache.program_error_push(
                         program_name,
-                        f"Master account with login {login_key_master} not found in account settings, skipping copy trading",
+                        message_err,
                     )
-                    await asyncio.sleep(5)
-                    continue
+                    raise ValueError(message_err)
+
+                program_name_master = mt5_account_master["programName"]
+                if not program_name_master:
+                    message_err = f"Master account with login {login_key_master} has no program name, skipping copy trading"
+                    await MT5ProgramCache.program_error_push(
+                        program_name,
+                        message_err,
+                    )
+                    raise ValueError(message_err)
 
                 program_data_master = await MT5ProgramCache.program_data_get_all(
                     program_name_master
@@ -143,12 +153,12 @@ async def main(program_name: str):
                 position_list_master = program_data_master.get("position_list", [])
 
                 if not py_process_master.get("is_running", False):
+                    message_err = f"Master program {program_name_master} is not running, skipping copy trading"
                     await MT5ProgramCache.program_error_push(
                         program_name,
-                        f"Master program {program_name_master} is not running, skipping copy trading",
+                        message_err,
                     )
-                    await asyncio.sleep(5)
-                    continue
+                    raise ValueError(message_err)
 
                 tickets_master = {
                     position.get("ticket", 0) for position in position_list_master
@@ -212,17 +222,20 @@ async def main(program_name: str):
                     )
 
                     if not account_info_master:
+                        message_err = f"Cannot get account info for master account {login_key_master}, skipping copy positions"
                         await MT5ProgramCache.program_error_push(
                             program_name,
-                            f"Cannot get account info for master account {login_key_master}, skipping copy positions",
+                            message_err,
                         )
-                        continue
-                    if not account_info_master.get("balance", 0.0) > 0:
+                        raise ValueError(message_err)
+                    master_equity = account_info_master.get("equity", 0.0)
+                    if master_equity <= 0:
+                        message_err = f"Master account {login_key_master} has non-positive equity, skipping copy positions"
                         await MT5ProgramCache.program_error_push(
                             program_name,
-                            f"Master account {login_key_master} has non-positive balance, skipping copy positions",
+                            message_err,
                         )
-                        continue
+                        raise ValueError(message_err)
 
                     for ticket in tickets_to_open:
                         position_master = position_master_map_ticket.get(ticket)
@@ -262,7 +275,7 @@ async def main(program_name: str):
                             (
                                 volume_master
                                 * account_info_follower.get("equity", 0.0)
-                                / account_info_master.get("equity", 0.0)
+                                / master_equity
                             ),
                         )
                         position_type: Literal["Buy", "Sell"] = (
@@ -290,25 +303,24 @@ async def main(program_name: str):
                             f"Open {position_type} - {symbol_follower}, volume:{volume_follower}, comment_master: {comment_master}, ticket: {ticket}",
                         )
 
-            await asyncio.sleep(TIME_SLEEP_SECONDS)
+        except Exception as e:
+            error_detail = traceback.format_exc()
+            await MT5ProgramCache.program_error_push(
+                program_name,
+                f"MT5 program runner encountered an error:  {e!s}\n{error_detail}",
+            )
+            await asyncio.sleep(60)  # Tạm dừng 60s
 
-    except Exception as e:
-        error_detail = traceback.format_exc()
-        await MT5ProgramCache.program_error_push(
-            program_name,
-            f"MT5 program runner encountered an error:  {e!s}\n{error_detail}",
-        )
-
-    finally:
-        mt5_client.shutdown()
-        await MT5ProgramCache.program_error_push(
-            program_name,
-            f"Exit PY Runner at {time.strftime('%Y-%m-%d %H:%M:%S')}",
-        )
-        await MT5ProgramCache.program_data_set_py_process(
-            program_name, {"pid": 0, "is_running": False}
-        )
-        await RedisConnection.close()
+        # finally:
+        #     mt5_client.shutdown()
+        #     await MT5ProgramCache.program_error_push(
+        #         program_name,
+        #         f"Exit PY Runner at {time.strftime('%Y-%m-%d %H:%M:%S')}",
+        #     )
+        #     await MT5ProgramCache.program_data_set_py_process(
+        #         program_name, {"pid": 0, "is_running": False}
+        #     )
+        #     await RedisConnection.close()
 
 
 if __name__ == "__main__":
